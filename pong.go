@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/deckarep/gosx-notifier"
 	"github.com/fatih/color"
 	"github.com/minio/mc/pkg/console"
 	"github.com/sparrc/go-ping"
@@ -41,13 +40,13 @@ func main() {
 			console.Errorln("network latency too high")
 			pinger.Stop()
 			if !down {
-				note := gosxnotifier.NewNotification("High latency detected: Network down")
-				note.Title = fmt.Sprintf("latency > 10 seconds")
-				note.Sound = gosxnotifier.Default
-				if err := note.Push(); err != nil {
-					console.Fatalln(err)
-				}
-				down = true
+			// 	note := gosxnotifier.NewNotification("High latency detected: Network down")
+			// 	note.Title = fmt.Sprintf("latency > 10 seconds")
+			// 	note.Sound = gosxnotifier.Default
+			// 	if err := note.Push(); err != nil {
+			// 		console.Fatalln(err)
+			// 	}
+			// 	down = true
 			}
 			continue
 		case <-finished:
@@ -65,12 +64,12 @@ func main() {
 		history[hIndex] = stats
 		first = false
 		if stats.PacketLoss > float64(30.00) {
-			note := gosxnotifier.NewNotification("High packet loss detected: Network unstable")
-			note.Title = fmt.Sprintf("Packet loss %0.2f%%", stats.PacketLoss)
-			note.Sound = gosxnotifier.Default
-			if err := note.Push(); err != nil {
-				console.Fatalln(err)
-			}
+			// note := gosxnotifier.NewNotification("High packet loss detected: Network unstable")
+			// note.Title = fmt.Sprintf("Packet loss %0.2f%%", stats.PacketLoss)
+			// note.Sound = gosxnotifier.Default
+			// if err := note.Push(); err != nil {
+			// 	console.Fatalln(err)
+			// }
 		}
 		for i := window; i>0; i-- {
 			stat := history[(hIndex + i) % window]
