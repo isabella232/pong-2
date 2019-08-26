@@ -46,10 +46,12 @@ func run(c *cobra.Command, args []string) {
 			if err != nil {
 				console.Fatalln(err)
 			}
+			defer r.Close()
 			w, err := os.OpenFile("/usr/local/bin/pong", os.O_CREATE|os.O_WRONLY, 0777)
 			if err != nil {
 				console.Fatalln(err)
 			}
+			defer w.Close()
 			if _, err := io.Copy(w, r); err != nil {
 				console.Fatalln(err)
 			}
@@ -68,7 +70,23 @@ func run(c *cobra.Command, args []string) {
 			os.Remove(exe)
 			console.Infof("pong succesfully installed to /usr/local/bin/pong")
 		case "darwin":
-			console.Fatalln("not yet implemented")
+			exe, err := os.Executable()
+			if err != nil {
+				console.Fatalln(err)
+			}
+			r, err := os.Open(exe)
+			if err != nil {
+				console.Fatalln(err)
+			}
+			defer r.Close()
+			w, err := os.OpenFile("/usr/local/bin/pong", os.O_CREATE|os.O_WRONLY, 0777)
+			if err != nil {
+				console.Fatalln(err)
+			}
+			defer w.Close()
+			if _, err := io.Copy(w, r); err != nil {
+				console.Fatalln(err)
+			}
 		case "windows":
 			console.Fatalln("not yet implemented")
 		} 
