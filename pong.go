@@ -3,13 +3,76 @@ package main
 import (
 	"fmt"
 	"time"
-
+	"runtime"
+	"io"
+	"os"
+	"os/exec"
+	
 	"github.com/fatih/color"
 	"github.com/minio/mc/pkg/console"
 	"github.com/sparrc/go-ping"
+	"github.com/spf13/cobra"
 )
 
+var pong = &cobra.Command{
+	Use: "pong",
+	Short: "summarized ping",
+	SilenceErrors: true,
+	SilenceUsage: true,
+	Run: run,
+}
+
+var privileged bool
+var install bool
+
+func init() {
+	pong.Flags().BoolVarP(&privileged, "privileged", "p", false, "run in privileged mode")
+	pong.Flags().BoolVarP(&install, "install", "i", false, "install pong in $PATH")
+}
+
 func main() {
+	pong.Execute()
+}
+
+func run(c *cobra.Command, args []string) {
+	if install {
+		switch runtime.GOOS {
+		case "linux":
+			exe, err := os.Executable()
+			if err != nil {
+				console.Fatalln(err)
+			}
+			r, err := os.Open(exe)
+			if err != nil {
+				console.Fatalln(err)
+			}
+			w, err := os.OpenFile("/usr/local/bin/pong", os.O_CREATE|os.O_WRONLY, 0777)
+			if err != nil {
+				console.Fatalln(err)
+			}
+			if _, err := io.Copy(w, r); err != nil {
+				console.Fatalln(err)
+			}
+			path, err := exec.LookPath("setcap")
+			if err != nil {
+				console.Fatalln(err)
+			}
+			cmd := exec.Command(path,[]string{"cap_net_raw=+ep", "/usr/local/bin/pong"}...)
+			cmd.Stderr = os.Stderr
+			cmd.Stdout = os.Stdout
+			cmd.Stdin = os.Stdin
+			if err := cmd.Run(); err != nil {
+				os.Remove("/usr/local/bin/pong")	
+				console.Fatalln(err)
+			}
+			os.Remove(exe)
+			console.Infof("pong succesfully installed to /usr/local/bin/pong")
+		case "darwin":
+			console.Fatalln("not yet implemented")
+		case "windows":
+			console.Fatalln("not yet implemented")
+		} 
+	}
 	down := false
 	first := true
 	const window = 30
@@ -22,6 +85,9 @@ func main() {
 		pinger, err := ping.NewPinger("8.8.8.8")
 		if err != nil {
 			console.Fatalln(err)
+		}
+		if privileged || runtime.GOOS == "linux" {
+			pinger.SetPrivileged(true)
 		}
 
 		finished := make(chan bool, 1)
