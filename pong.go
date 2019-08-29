@@ -24,8 +24,10 @@ var pong = &cobra.Command{
 
 var privileged bool
 var install bool
+var destination string
 
 func init() {
+	pong.Flags().StringVarP(&destination, "destination", "d", "8.8.8.8", "ip/hostname to ping")
 	pong.Flags().BoolVarP(&privileged, "privileged", "p", false, "run in privileged mode")
 	pong.Flags().BoolVarP(&install, "install", "i", false, "install pong in $PATH")
 }
@@ -100,7 +102,7 @@ func run(c *cobra.Command, args []string) {
 	bolder := color.New(color.Bold)
 	console.Printf("%s %s    %s %s   %s %s   %s %s\t%s %s\n", bolder.Sprintf(" \u2261"), bolder.Add(color.FgHiGreen).Sprint("Index"), bolder.Add(color.FgYellow).Sprintf(" \u21de "), bolder.Add(color.FgHiGreen).Sprint("Packets Sent"), bolder.Add(color.FgBlue).Sprintf(" \u21af "), bolder.Add(color.FgHiGreen).Sprint("Packets Recvd."),  bolder.Add(color.FgRed).Sprintf(" \u2691 "), bolder.Add(color.FgHiGreen).Sprint("Packet Loss"), bolder.Sprintf(" \u267e "), bolder.Add(color.FgHiGreen).Sprint("Average Round Trip Time"))
 	for {
-		pinger, err := ping.NewPinger("8.8.8.8")
+		pinger, err := ping.NewPinger(destination)
 		if err != nil {
 			console.Fatalln(err)
 		}
